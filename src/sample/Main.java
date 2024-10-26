@@ -3,6 +3,7 @@ package sample;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -23,6 +24,15 @@ public class Main extends Application {
         静态变量：在类内部维护一个静态变量，用于存储唯一的实例。
         静态方法：提供一个静态方法，返回该静态变量的实例。如果实例尚未创建，则创建它并返回；如果已创建，则直接返回现有实例。
         **/
+
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
+
+    public void setPrimaryStage(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+    }
+
     public static Main getInstance() {
         System.out.println("返回实例");
         return instance;

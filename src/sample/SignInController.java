@@ -11,6 +11,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
@@ -33,8 +34,8 @@ public class SignInController {
     Connection connection = DatabaseConnection.getConnection();
     @FXML
     private Circle circleIcon;
-    @FXML
-    private Stage stage;
+
+    static Stage stage;
     private Scene scene;
     private Pane root;
     @FXML
@@ -60,25 +61,31 @@ public class SignInController {
 
                 FXMLLoader loader =new FXMLLoader(getClass().getResource("fxml/chatController.fxml"));
                 root = loader.load();
-                root.setOnMousePressed(events -> {
-                    xOffset = events.getSceneX();
-                    yOffset = events.getSceneY();
-                });
 
-                root.setOnMouseDragged(events -> {
-                    stage.setX(events.getScreenX() - xOffset);
-                    stage.setY(events.getScreenY() - yOffset);
-                });
+
                 // 获取聊天界面的控制器
                 root.setStyle("-fx-background-color: transparent;");
 
                 ChatController chatController = loader.getController();
                 chatController.setLabel(userIdTextField.getText(),0); // 设置用户名
+                if (chatController.getDrawing() == false){
+                    System.out.println(chatController.getDrawing());
+                    root.setOnMousePressed(events -> {
+                        xOffset = events.getSceneX();
+                        yOffset = events.getSceneY();
+                    });
+
+                    root.setOnMouseDragged(events -> {
+                        stage.setX(events.getScreenX() - xOffset);
+                        stage.setY(events.getScreenY() - yOffset);
+                    });
+                }
                 root.getChildren().add(chatController.drawWindow);
 
 
 
                 stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
+
                 scene = new Scene(root, Color.TRANSPARENT);
                 String css = this.getClass().getResource("application.css").toExternalForm();
                 scene.getStylesheets().add(css);
