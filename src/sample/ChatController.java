@@ -44,6 +44,7 @@ public class ChatController extends Thread{
     private VBox myMessage;
     @FXML
     private VBox imageMessage;
+
     @FXML
     private VBox otherMessage;
     @FXML
@@ -66,8 +67,10 @@ public class ChatController extends Thread{
     Timestamp currentTimestamp;
     Connection connection = DatabaseConnection.getConnection();
     private Socket socket;
-    private PrintWriter out;
-    private BufferedReader in;
+    private DataOutputStream out; // 文本消息输出流
+    private DataOutputStream imageOut; // 图像消息输出流
+    private DataInputStream in; // 文本消息输入流
+    private DataInputStream imageIn; // 图像消息输入流
     private double lastX, lastY; // 记录上一个鼠标位置
     public Stage getStage() {
         return stage;
@@ -75,12 +78,15 @@ public class ChatController extends Thread{
     public void setStage(Stage stage) {
         this.stage = stage;
     }
+    @FXML
     Canvas myCanvas;
     private GraphicsContext gc;
     private Boolean isDrawing =false;
 
     @FXML
     private ImageView myImage;
+    @FXML
+    private ImageView otherImage;
     private Boolean canvasDraw = false;
     private WritableImage writableImage;
     public Boolean getDrawing() {
@@ -90,7 +96,7 @@ public class ChatController extends Thread{
     public void setDrawing(Boolean drawing) {
         isDrawing = drawing;
     }
-
+    private boolean isSendingMessage = false; // 新增标志
     @FXML
     public void initialize() {
 // 获取当前窗口并设置 stage
@@ -151,11 +157,14 @@ public class ChatController extends Thread{
     //按下回车的方法用KeyEvent事件监听
     public void pressEnter(KeyEvent event) throws IOException {
         javafx.scene.input.KeyCode code = event.getCode();
+        isSendingMessage = true; // 设置标志为 true，表明正在发送消息
         if (code == KeyCode.valueOf("ENTER")){
             String message = messageTextField.getText().trim();
             if (!message.isEmpty()) {
                 addChatMessage(message);
-                out.println(message); // 发送消息到服务器
+                out.writeInt(0); // 0 for text
+                out.writeUTF(message); // 发送文本消息
+                out.flush(); // 确保数据被发送
                 messageTextField.clear();
             }
 
@@ -166,25 +175,27 @@ public class ChatController extends Thread{
             String sender_id = usernameLabel.getText();
 
             insertUser(sender_id,"gouzi",message,currentTimestamp,(byte) 0);
+            isSendingMessage = false; // 新增标志
 
         }
     }
     public void sendMessage(ActionEvent event) throws IOException {
-
+        isSendingMessage = true; // 设置标志为 true，表明正在发送消息
         String message = messageTextField.getText().trim();
         if (!message.isEmpty()) {
             addChatMessage(message);
-            out.println(message); // 发送消息到服务器
+            out.writeInt(0); // 0 for text
+            out.writeUTF(message); // 发送文本消息
+            out.flush(); // 确保数据被发送
             messageTextField.clear();
+
+            // 更新数据库
+            currentTimestamp = new Timestamp(System.currentTimeMillis());
+            String senderId = usernameLabel.getText();
+            insertUser(senderId, "gouzi", message, currentTimestamp, (byte) 0);
+
+          isSendingMessage = false; // 新增标志
         }
-
-        //更精准的时间类
-        currentTimestamp = new Timestamp(System.currentTimeMillis() / 1000 * 1000);
-
-        System.out.println(currentTimestamp);
-        String sender_id = usernameLabel.getText();
-
-        insertUser(sender_id,"gouzi",message,currentTimestamp,(byte) 0);
 
     }
     public void drawPicture(Canvas myCanvas,GraphicsContext gc){
@@ -219,14 +230,15 @@ public class ChatController extends Thread{
             gc.closePath(); // 结束路径
             this.isDrawing = true;
             myCanvas.setOnMouseExited(even -> {
-                writableImage = saveCanvasToImage(myCanvas);
-                addChatDrawMessage(writableImage);
-                // 获取 Canvas 的图像数据
-                BufferedImage bufferedImage = SwingFXUtils.fromFXImage(myCanvas.snapshot(null, null), null);
-                sendImageToServer(bufferedImage);
-                myCanvas.setHeight(INITIAL_HEIGHT);
-                myCanvas.setWidth(INITIAL_WIDTH);
-                saveCanvasAsImage(bufferedImage);
+               if(!isSendingMessage){
+                   writableImage = saveCanvasToImage(myCanvas);
+                   // 获取 Canvas 的图像数据
+                   BufferedImage bufferedImage = SwingFXUtils.fromFXImage(myCanvas.snapshot(null, null), null);
+
+                   myCanvas.setHeight(INITIAL_HEIGHT);
+                   myCanvas.setWidth(INITIAL_WIDTH);
+                   sendImageToServer(bufferedImage);
+               }
 
 
             });
@@ -239,8 +251,27 @@ public class ChatController extends Thread{
     }
     private void sendImageToServer(BufferedImage bufferedImage){
 
+        try {
+            byte[] imageBytes = writableImageToByteArray(bufferedImage);
+            out.writeInt(1); // 1 for image
+            out.writeInt(imageBytes.length); // 发送图片大小
+            out.write(imageBytes); // 发送图片数据
+            out.flush(); // 确保数据被发送
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
+    }
+    private byte[] writableImageToByteArray(BufferedImage bufferedImage) {
+        // 使用 ByteArrayOutputStream 存储字节数据
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
+            ImageIO.write(bufferedImage, "png", baos); // 可以选择其他格式，如 "jpg"
+            return baos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
     private void saveCanvasAsImage(BufferedImage bufferedImage) {
 
@@ -273,10 +304,24 @@ public class ChatController extends Thread{
     private class IncomingMessageHandler implements Runnable {
         public void run() {
             try {
-                String message;
-                while ((message = in.readLine()) != null) {
-                    String finalMessage = message;
-                    Platform.runLater(() -> addOtherMessage(finalMessage)); // 调用 addOtherMessage
+                while (true) {
+                    int messageType = in.readInt(); // 先读取消息类型
+
+
+                    if (messageType == 0) { // 文本消息
+                        String message = in.readUTF(); // 读取文本消息
+                        Platform.runLater(() -> addOtherMessage(message)); // 更新 UI
+                    }
+                    if (messageType == 1) { // 图片消息
+                        int imageSize = in.readInt(); // 读取图片大小
+                        byte[] imageBytes = new byte[imageSize];
+                        in.readFully(imageBytes); // 读取完整的图片数据
+
+                        System.out.println("接收图片");
+                        // 将字节数组转换为 BufferedImage
+                        BufferedImage img = ImageIO.read(new ByteArrayInputStream(imageBytes));
+                        Platform.runLater(() -> addOtherChatDrawMessage(SwingFXUtils.toFXImage(img, null))); // 显示图像
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -288,8 +333,11 @@ public class ChatController extends Thread{
     public void connectToServer() {
         try {
             socket = new Socket("1.94.30.181", 12347); // 连接到服务器
-            out = new PrintWriter(socket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            // 创建两个流
+            out = new DataOutputStream(socket.getOutputStream());
+           // imageOut = new DataOutputStream(socket.getOutputStream()); // 这里可以使用相同的输出流
+            in= new DataInputStream(socket.getInputStream());
+           //imageIn = new DataInputStream(socket.getInputStream()); // 这里也可以使用相同的输入流
 
 
             // 启动接收消息的线程
@@ -371,7 +419,7 @@ public class ChatController extends Thread{
 
     }
 
-    private void addChatDrawMessage(WritableImage mydraw){
+   /* private void addChatDrawMessage(WritableImage mydraw){
         System.out.println("绘画方法运行了");
         // 创建ImageView
         if (!imageMessage.getChildren().isEmpty()) {
@@ -398,30 +446,30 @@ public class ChatController extends Thread{
         } else {
             System.out.println("mydraw 是 null，无法设置图像");
         }
-    }
+    }*/
     private void addOtherChatDrawMessage(WritableImage mydraw){
         System.out.println("绘画方法运行了");
         // 创建ImageView
-        if (!imageMessage.getChildren().isEmpty()) {
-            imageMessage.getChildren().clear(); // 移除旧的图像
+        if (!otherImageMessage.getChildren().isEmpty()) {
+            otherImageMessage.getChildren().clear(); // 移除旧的图像
         }
 
         // 检查 mydraw 是否有效
         if (mydraw != null) {
-            myImage.setImage(mydraw);
-            myImage.setFitWidth(125); // 设置缩放后的宽度
-            myImage.setFitHeight(100); // 设置缩放后的高度
-            myImage.setPreserveRatio(true); // 保持图像比例
-            System.out.println(myImage);
+            otherImage.setImage(mydraw);
+            otherImage.setFitWidth(125); // 设置缩放后的宽度
+            otherImage.setFitHeight(100); // 设置缩放后的高度
+            otherImage.setPreserveRatio(true); // 保持图像比例
+            System.out.println(otherImage);
 
             // 添加到容器中
-            imageMessage.getChildren().add(myImage);
+            otherImageMessage.getChildren().add(otherImage);
 
             // 创建并播放淡出动画
-            FadeTransition fadeOut = new FadeTransition(Duration.seconds(10), myImage);
+            FadeTransition fadeOut = new FadeTransition(Duration.seconds(10), otherImage);
             fadeOut.setFromValue(1.0);
             fadeOut.setToValue(0.0);
-            fadeOut.setOnFinished(event -> imageMessage.getChildren().remove(myImage));
+            fadeOut.setOnFinished(event -> otherImageMessage.getChildren().remove(otherImage));
             fadeOut.play();
         } else {
             System.out.println("mydraw 是 null，无法设置图像");
@@ -436,7 +484,7 @@ public class ChatController extends Thread{
         FadeTransition fadeOut2 = new FadeTransition(Duration.seconds(10), msgLabel);
         fadeOut2.setFromValue(1.0);
         fadeOut2.setToValue(0.0);
-        fadeOut2.setOnFinished(event -> myMessage.getChildren().remove(msgLabel));
+        fadeOut2.setOnFinished(event -> otherMessage.getChildren().remove(msgLabel));
         fadeOut2.play();
     }
 

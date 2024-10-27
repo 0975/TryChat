@@ -3,6 +3,7 @@
     <output-path>$USER_HOME$/Desktop/exe</output-path>
     <root id="archive" name="TryChat.jar">
       <element id="module-output" name="TryChat" />
+      <element id="extracted-dir" path="$APPLICATION_CONFIG_DIR$/jdbc-drivers/MySQL ConnectorJ/8.2.0/com/mysql/mysql-connector-j/8.2.0/mysql-connector-j-8.2.0.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$USER_HOME$/Downloads/openjfx-22.0.1_windows-x64_bin-sdk/javafx-sdk-22.0.1/lib/javafx-swt.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$USER_HOME$/Downloads/openjfx-22.0.1_windows-x64_bin-sdk/javafx-sdk-22.0.1/lib/javafx.web.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$USER_HOME$/Downloads/openjfx-22.0.1_windows-x64_bin-sdk/javafx-sdk-22.0.1/lib/javafx.base.jar" path-in-jar="/" />
@@ -11,7 +12,6 @@
       <element id="extracted-dir" path="$USER_HOME$/Downloads/openjfx-22.0.1_windows-x64_bin-sdk/javafx-sdk-22.0.1/lib/javafx.swing.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$USER_HOME$/Downloads/openjfx-22.0.1_windows-x64_bin-sdk/javafx-sdk-22.0.1/lib/javafx.controls.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$USER_HOME$/Downloads/openjfx-22.0.1_windows-x64_bin-sdk/javafx-sdk-22.0.1/lib/javafx.graphics.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$APPLICATION_CONFIG_DIR$/jdbc-drivers/MySQL ConnectorJ/8.2.0/com/mysql/mysql-connector-j/8.2.0/mysql-connector-j-8.2.0.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>
