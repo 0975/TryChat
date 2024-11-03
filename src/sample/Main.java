@@ -70,7 +70,8 @@ public class Main extends Application {
             primaryStage.setX(event.getScreenX() - xOffset);
             primaryStage.setY(event.getScreenY() - yOffset);
         });
-
+// 设置窗口为始终在最前
+        primaryStage.setAlwaysOnTop(true);
 
         primaryStage.setScene(signUp);
         primaryStage.show();

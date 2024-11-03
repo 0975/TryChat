@@ -44,6 +44,7 @@ public class SignInController {
     PasswordField passwordField;
 
 
+
     public void initialize() {
         // 加载图片
         Image image = new Image("sample/images/chiikawa.jpg");
@@ -55,60 +56,77 @@ public class SignInController {
     public void signIn(ActionEvent event){
 
         try {
-            if (checkUserExists(userIdTextField.getText()) && checkPasswordExists(passwordField.getText())) {
-                System.out.println("用户存在，登录成功！"); // 用户名存在，继续登录
+         if (true){
+             if (checkUserExists(userIdTextField.getText()) && checkPasswordExists(passwordField.getText())) {
 
 
-                FXMLLoader loader =new FXMLLoader(getClass().getResource("fxml/chatController.fxml"));
-                root = loader.load();
+                 System.out.println("用户存在，登录成功！"); // 用户名存在，继续登录
 
 
-                // 获取聊天界面的控制器
-                root.setStyle("-fx-background-color: transparent;");
-
-                ChatController chatController = loader.getController();
-                chatController.setLabel(userIdTextField.getText(),0); // 设置用户名
-                if (chatController.getDrawing() == false){
-                    System.out.println(chatController.getDrawing());
-                    root.setOnMousePressed(events -> {
-                        xOffset = events.getSceneX();
-                        yOffset = events.getSceneY();
-                    });
-
-                    root.setOnMouseDragged(events -> {
-                        stage.setX(events.getScreenX() - xOffset);
-                        stage.setY(events.getScreenY() - yOffset);
-                    });
-                }
-                root.getChildren().add(chatController.drawWindow);
+                 FXMLLoader loader =new FXMLLoader(getClass().getResource("fxml/chatController.fxml"));
+                 root = loader.load();
 
 
+                 // 获取聊天界面的控制器
+                 root.setStyle("-fx-background-color: transparent;");
 
-                stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
+                 ChatController chatController = loader.getController();
+                 chatController.setLabel(userIdTextField.getText(),0); // 设置用户名
+                 if (chatController.getDrawing() == false){
+                     System.out.println(chatController.getDrawing());
+                     root.setOnMousePressed(events -> {
+                         xOffset = events.getSceneX();
+                         yOffset = events.getSceneY();
+                     });
 
-                scene = new Scene(root, Color.TRANSPARENT);
-                String css = this.getClass().getResource("application.css").toExternalForm();
-                scene.getStylesheets().add(css);
-                stage.setScene(scene);
-                stage.show();
-                chatController.connectToServer();
-                System.out.println("链接服务器成功");
+                     root.setOnMouseDragged(events -> {
+                         stage.setX(events.getScreenX() - xOffset);
+                         stage.setY(events.getScreenY() - yOffset);
+                     });
+                 }
+                 root.getChildren().add(chatController.drawWindow);
 
-            } else {
-                System.out.println("用户不存在，登录失败。"); // 用户名不存在，停止方法
-                //警示框
-                Alert alert = new Alert(Alert.AlertType.ERROR); // 使用 ERROR 类型
-                alert.setTitle("登录错误");
-                alert.setHeaderText("密码错误");
-                alert.setContentText("您输入的密码不正确，请重试。");
 
-                // 设置样式
-                // 设置样式
-                alert.getDialogPane().setStyle("-fx-background-color: #f8d7da;"); // 背景颜色
-                alert.getDialogPane().setStyle("-fx-border-color: #f5c6cb;-fx-font-size: 10px"); // 边框样式
-                alert.showAndWait(); // 显示对话框并等待用户关闭
-                return; // 停止方法
-            }
+
+                 stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
+
+                 scene = new Scene(root, Color.TRANSPARENT);
+                 String css = this.getClass().getResource("application.css").toExternalForm();
+                 scene.getStylesheets().add(css);
+                 stage.setScene(scene);
+                 stage.show();
+                 chatController.connectToServer();
+                 System.out.println("链接服务器成功");
+
+             } else {
+                 System.out.println("用户不存在，登录失败。"); // 用户名不存在，停止方法
+                 //警示框
+                 Alert alert = new Alert(Alert.AlertType.ERROR); // 使用 ERROR 类型
+                 alert.setTitle("登录错误");
+                 alert.setHeaderText("密码错误");
+                 alert.setContentText("您输入的密码不正确，请重试。");
+
+                 // 设置样式
+                 // 设置样式
+                 alert.getDialogPane().setStyle("-fx-background-color: #f8d7da;"); // 背景颜色
+                 alert.getDialogPane().setStyle("-fx-border-color: #f5c6cb;-fx-font-size: 10px"); // 边框样式
+                 alert.showAndWait(); // 显示对话框并等待用户关闭
+                 return; // 停止方法
+             }
+         }else {
+             System.out.println("请等待服务器连接");
+             //警示框
+             Alert alert = new Alert(Alert.AlertType.ERROR); // 使用 ERROR 类型
+             alert.setTitle("服务器请求中");
+             alert.setHeaderText("等待服务器连接");
+             alert.setContentText("请等待服务器连接。");
+
+             // 设置样式
+             // 设置样式
+             alert.getDialogPane().setStyle("-fx-background-color: #f8d7da;"); // 背景颜色
+             alert.getDialogPane().setStyle("-fx-border-color: #f5c6cb;-fx-font-size: 10px"); // 边框样式
+             alert.showAndWait(); // 显示对话框并等待用户关闭
+         }
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -32,6 +32,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class ChatController extends Thread{
     private static final double INITIAL_WIDTH = 200;  // 初始宽度
@@ -97,6 +100,8 @@ public class ChatController extends Thread{
         isDrawing = drawing;
     }
     private boolean isSendingMessage = false; // 新增标志
+
+    SSHExample sshExample = new SSHExample();
     @FXML
     public void initialize() {
 // 获取当前窗口并设置 stage
@@ -156,6 +161,7 @@ public class ChatController extends Thread{
 
     //按下回车的方法用KeyEvent事件监听
     public void pressEnter(KeyEvent event) throws IOException {
+
         javafx.scene.input.KeyCode code = event.getCode();
         isSendingMessage = true; // 设置标志为 true，表明正在发送消息
         if (code == KeyCode.valueOf("ENTER")){
@@ -180,6 +186,17 @@ public class ChatController extends Thread{
         }
     }
     public void sendMessage(ActionEvent event) throws IOException {
+
+            // 尝试连接到远程主机
+        /*    if (sshExample.connect()) {
+                // 执行命令
+                sshExample.executeCommands();
+                sshExample.startHeartbeat();
+                // 断开连接
+                // sshExample.disconnect();
+            } else {
+                System.err.println("Failed to connect to the SSH server.");
+            }*/
         isSendingMessage = true; // 设置标志为 true，表明正在发送消息
         String message = messageTextField.getText().trim();
         if (!message.isEmpty()) {
@@ -329,21 +346,88 @@ public class ChatController extends Thread{
         }
     }
 
+
     //连接服务器的方法
     public void connectToServer() {
+
+      try {
+          // 尝试连接到远程主机
+          /*if (sshExample.connect()) {
+              // 执行命令
+              sshExample.executeCommands();
+              sshExample.startHeartbeat();
+              // 断开连接
+             // sshExample.disconnect();
+          } else {
+              System.err.println("Failed to connect to the SSH server.");
+          }*/
+          socket = new Socket("1.94.30.181", 12347); // 连接到服务器
+          // 创建两个流
+          out = new DataOutputStream(socket.getOutputStream());
+          // imageOut = new DataOutputStream(socket.getOutputStream()); // 这里可以使用相同的输出流
+          in= new DataInputStream(socket.getInputStream());
+          //imageIn = new DataInputStream(socket.getInputStream()); // 这里也可以使用相同的输入流
+          // 启动心跳线程
+          new Thread(() -> {
+              try {
+                  while (true) {
+                      out.writeInt(2); // 发送心跳消息类型
+                      out.flush();
+                      Thread.sleep(5000); // 每 5 秒发送一次心跳
+                  }
+              } catch (IOException | InterruptedException e) {
+                  e.printStackTrace();
+              }
+          }).start();
+          // 启动接收消息的线程
+          new Thread(new IncomingMessageHandler()).start();
+
+          // 启动心跳机制
+          //startHeartbeat();
+      }  catch (Exception e) {
+          e.printStackTrace();
+      }
+
+    }
+
+
+    // 启动心跳机制
+    private void startHeartbeat() {
+        ScheduledExecutorService heartbeatScheduler = Executors.newScheduledThreadPool(1);
+        heartbeatScheduler.scheduleAtFixedRate(() -> sendHeartbeat(), 0, 60, TimeUnit.SECONDS); // 每30秒发送一次心跳
+    }
+
+    private void sendHeartbeat() {
         try {
-            socket = new Socket("1.94.30.181", 12347); // 连接到服务器
-            // 创建两个流
-            out = new DataOutputStream(socket.getOutputStream());
-           // imageOut = new DataOutputStream(socket.getOutputStream()); // 这里可以使用相同的输出流
-            in= new DataInputStream(socket.getInputStream());
-           //imageIn = new DataInputStream(socket.getInputStream()); // 这里也可以使用相同的输入流
-
-
-            // 启动接收消息的线程
-            new Thread(new IncomingMessageHandler()).start();
+            String heartbeatMessage = "HEARTBEAT"; // 根据协议定义心跳消息
+            out.writeInt(2);
+            out.writeUTF(heartbeatMessage); // 发送心跳消息
+            out.flush();
+            System.out.println("心跳消息已发送");
+        } catch (IOException e) {
+            System.err.println("心跳发送失败: " + e.getMessage());
+            // 可以在这里考虑处理连接丢失的情况
+        }
+    }
+    // 关闭连接和停止心跳
+    public void disconnect() {
+        try {
+            if (socket != null && !socket.isClosed()) {
+                socket.close();
+            }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+    //暂停项目
+    private static void pauseProgram() {
+        try {
+            System.out.println("Pausing program...");
+
+            Thread.sleep(10000); // 每隔10秒重试
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("Pause interrupted: " + e.getMessage());
         }
     }
     //提示按钮
@@ -355,6 +439,7 @@ public class ChatController extends Thread{
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
+
 
                 try {
                     PreparedStatement statement = connection.prepareStatement(

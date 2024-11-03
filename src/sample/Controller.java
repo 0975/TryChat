@@ -1,5 +1,5 @@
 package sample;
-
+import sample.SSHExample;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -27,7 +27,7 @@ public class Controller {
     private Stage stage;
     private Scene scene;
     private Pane root;
-
+    SSHExample sshExample = new SSHExample();
 
     public void initialize() {
         // 加载图片
@@ -40,6 +40,9 @@ public class Controller {
     public void signUp(ActionEvent event){
 
         try {
+
+
+            sshExample.executeCommands();
             FXMLLoader loader =new FXMLLoader(getClass().getResource("fxml/signUp.fxml"));
             root = loader.load();
             root.setStyle("-fx-background-color: transparent;");
