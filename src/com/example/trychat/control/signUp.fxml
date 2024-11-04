@@ -12,7 +12,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<Pane prefHeight="473.0" prefWidth="287.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.SignUpController">
+<Pane prefHeight="473.0" prefWidth="287.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.trychat.control.controller.SignUpController">
    <children>
       <Rectangle fx:id="signUpPage" arcHeight="30.0" arcWidth="30.0" fill="WHITE" height="425.0" layoutX="19.0" layoutY="27.0" stroke="TRANSPARENT" strokeType="INSIDE" strokeWidth="0.0" width="250.0">
          <effect>

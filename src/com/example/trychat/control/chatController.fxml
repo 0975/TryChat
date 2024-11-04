@@ -15,7 +15,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<Pane prefHeight="711.0" prefWidth="287.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.ChatController">
+<Pane prefHeight="711.0" prefWidth="287.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.trychat.control.controller.ChatController">
    <children>
       <StackPane fx:id="drawWindow" layoutX="44.0" layoutY="435.0" prefHeight="150.0" prefWidth="200.0">
          <children>

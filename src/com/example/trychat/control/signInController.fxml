@@ -13,7 +13,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<Pane prefHeight="473.0" prefWidth="287.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.SignInController">
+<Pane prefHeight="473.0" prefWidth="287.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.trychat.control.controller.SignInController">
    <children>
       <Rectangle fx:id="signUpPage" arcHeight="50.0" arcWidth="50.0" fill="WHITE" height="425.0" layoutX="19.0" layoutY="27.0" stroke="TRANSPARENT" strokeType="INSIDE" strokeWidth="0.0" width="250.0">
          <effect>
@@ -58,7 +58,7 @@
       </Button>
       <ImageView fitHeight="119.0" fitWidth="114.0" layoutX="87.0" layoutY="98.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@../images/chiikawa.gif" />
+            <Image url="@/com/example/trychat/images/chiikawa.gif" />
          </image>
       </ImageView>
    </children>

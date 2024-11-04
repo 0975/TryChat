@@ -6,7 +6,7 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.Font?>
 
-<Pane fx:id="userMessage" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="347.0" prefWidth="287.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.UserMessageController">
+<Pane fx:id="userMessage" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="347.0" prefWidth="287.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.trychat.control.controller.UserMessageController">
    <children>
       <Rectangle arcHeight="50.0" arcWidth="50.0" fill="WHITE" height="126.0" layoutX="21.0" layoutY="103.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="200.0" />
       <Label fx:id="nameLabel" alignment="CENTER" layoutX="21.0" layoutY="144.0" prefHeight="24.0" prefWidth="200.0" text="Hello:">

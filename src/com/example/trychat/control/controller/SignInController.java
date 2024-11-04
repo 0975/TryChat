@@ -1,28 +1,23 @@
-package sample;
+package com.example.trychat.control.controller;
 
+import com.example.trychat.SockerNet.ConnectServer;
+import com.example.trychat.dao.fxml.DatabaseConnection;
+import com.example.trychat.Main;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
-import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
 import java.io.*;
-import java.net.Socket;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,6 +27,7 @@ public class SignInController {
     private double xOffset = 0;
     private double yOffset = 0;
     Connection connection = DatabaseConnection.getConnection();
+    ConnectServer connectServer = new ConnectServer();
     @FXML
     private Circle circleIcon;
 
@@ -47,7 +43,7 @@ public class SignInController {
 
     public void initialize() {
         // 加载图片
-        Image image = new Image("sample/images/chiikawa.jpg");
+        Image image = new Image("com/example/trychat/images/chiikawa.jpg");
         // 将图片填充到圆形
         circleIcon.setFill(new ImagePattern(image));
 
@@ -59,11 +55,10 @@ public class SignInController {
          if (true){
              if (checkUserExists(userIdTextField.getText()) && checkPasswordExists(passwordField.getText())) {
 
-
                  System.out.println("用户存在，登录成功！"); // 用户名存在，继续登录
 
 
-                 FXMLLoader loader =new FXMLLoader(getClass().getResource("fxml/chatController.fxml"));
+                 FXMLLoader loader =new FXMLLoader(getClass().getResource("/com/example/trychat/control/chatController.fxml"));
                  root = loader.load();
 
 
@@ -91,11 +86,11 @@ public class SignInController {
                  stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
 
                  scene = new Scene(root, Color.TRANSPARENT);
-                 String css = this.getClass().getResource("application.css").toExternalForm();
+                 String css = this.getClass().getResource("/com/example/trychat/control/application.css").toExternalForm();
                  scene.getStylesheets().add(css);
                  stage.setScene(scene);
                  stage.show();
-                 chatController.connectToServer();
+                 connectServer.connectToServer();
                  System.out.println("链接服务器成功");
 
              } else {

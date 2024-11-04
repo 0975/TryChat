@@ -1,16 +1,19 @@
-package sample;
+package com.example.trychat;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
 import java.io.IOException;
-
+/**
+ * 这是启动程序的类
+ * @author lihongjie
+ * @version 1.0
+ * */
 public class Main extends Application {
     private double xOffset = 0;
     private double yOffset = 0;
@@ -51,12 +54,12 @@ public class Main extends Application {
 
     //加载首页的方法
     public void firstPage(Stage primaryStage) throws IOException {
-        Pane root = FXMLLoader.load(getClass().getResource("fxml/sample.fxml"));
+        Pane root = FXMLLoader.load(getClass().getResource("/com/example/trychat/control/sample.fxml"));
         root.setStyle("-fx-background-color: transparent;");
 
 
         signUp = new Scene(root, Color.TRANSPARENT);
-        String css = this.getClass().getResource("application.css").toExternalForm();
+        String css = this.getClass().getResource("/com/example/trychat/control/application.css").toExternalForm();
         signUp.getStylesheets().add(css);
 
         primaryStage.initStyle(StageStyle.TRANSPARENT);

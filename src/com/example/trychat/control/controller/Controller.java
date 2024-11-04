@@ -1,13 +1,10 @@
-package sample;
-import sample.SSHExample;
+package com.example.trychat.control.controller;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -27,11 +24,11 @@ public class Controller {
     private Stage stage;
     private Scene scene;
     private Pane root;
-    SSHExample sshExample = new SSHExample();
+    //SSHExample sshExample = new SSHExample();
 
     public void initialize() {
         // 加载图片
-        Image image = new Image("sample/images/chiikawa.jpg");
+        Image image = new Image("com/example/trychat/images/chiikawa.jpg");
         // 将图片填充到圆形
         circleIcon.setFill(new ImagePattern(image));
 
@@ -42,13 +39,13 @@ public class Controller {
         try {
 
 
-            sshExample.executeCommands();
-            FXMLLoader loader =new FXMLLoader(getClass().getResource("fxml/signUp.fxml"));
+            //sshExample.executeCommands();
+            FXMLLoader loader =new FXMLLoader(getClass().getResource("/com/example/trychat/control/signUp.fxml"));
             root = loader.load();
             root.setStyle("-fx-background-color: transparent;");
             stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
             scene = new Scene(root, Color.TRANSPARENT);
-            String css = this.getClass().getResource("application.css").toExternalForm();
+            String css = this.getClass().getResource("/com/example/trychat/control/application.css").toExternalForm();
             scene.getStylesheets().add(css);
 
             root.setOnMousePressed(events -> {
@@ -68,12 +65,12 @@ public class Controller {
     }
     public void signIn(ActionEvent event){
         try {
-            FXMLLoader loader =new FXMLLoader(getClass().getResource("fxml/signInController.fxml"));
+            FXMLLoader loader =new FXMLLoader(getClass().getResource("/com/example/trychat/control/signInController.fxml"));
             root = loader.load();
             root.setStyle("-fx-background-color: transparent;");
             stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
             scene = new Scene(root, Color.TRANSPARENT);
-            String css = this.getClass().getResource("application.css").toExternalForm();
+            String css = this.getClass().getResource("/com/example/trychat/control/application.css").toExternalForm();
             scene.getStylesheets().add(css);
 
             root.setOnMousePressed(events -> {

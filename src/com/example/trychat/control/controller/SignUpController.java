@@ -1,11 +1,13 @@
-package sample;
+package com.example.trychat.control.controller;
 
+import com.example.trychat.dao.fxml.DatabaseConnection;
+import com.example.trychat.Main;
+import com.example.trychat.modle.User;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -16,7 +18,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import java.io.IOException;
 import java.sql.*;
@@ -47,13 +48,7 @@ public class SignUpController {
     private Scene scene;
     private Pane root;
 
-    String firstName;
-    String lastName;
-    String email;
-    int age;
-    String userName;
-    String password;
-    String user_name;
+    User user;
     @FXML
     private Circle circleIcon;//头像框
     @FXML
@@ -63,7 +58,7 @@ public class SignUpController {
     //修改头像的方法
     public void initialize() {
         // 加载图片
-        Image image = new Image("sample/images/chiikawa.jpg");
+        Image image = new Image("com/example/trychat/images/chiikawa.jpg");
         // 将图片填充到圆形
         circleIcon.setFill(new ImagePattern(image));
 
@@ -82,29 +77,28 @@ public class SignUpController {
     public void submit(ActionEvent event){
 
         try {
-            userName = userNameField.getText();
-            password = passwordTextField.getText();
-            age = Integer.parseInt(ageField.getText());
-            firstName = firstNameField.getText();
-            lastName = lastNameField.getText();
-            email = emailField.getText();
-            password = passwordTextField.getText();
-            if (age <18){
-                myLabel.setText("你是未成年，不许注册");
-                return;
-            }
-            System.out.println(age);
-            FXMLLoader loader =new FXMLLoader(getClass().getResource("fxml/userMessage.fxml"));
+            user = new User();
+            user.setUserName(userNameField.getText());
+            user.setAge(Integer.parseInt(ageField.getText()));
+            user.setFirstName(firstNameField.getText());
+            user.setLastName(lastNameField.getText());
+            user.setEmail(emailField.getText());
+            user.setPassword(passwordTextField.getText());
+
+
+            System.out.println(user .getAge());
+            FXMLLoader loader =new FXMLLoader(getClass().getResource("/com/example/trychat/control/fxml/userMessage.fxml"));
             root = loader.load();
             stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
             root.setStyle("-fx-background-color: transparent;");
             scene = new Scene(root,Color.TRANSPARENT);
 
-            String css = this.getClass().getResource("application.css").toExternalForm();
+            String css = this.getClass().getResource("control/application.css").toExternalForm();
             scene.getStylesheets().add(css);
             UserMessageController userMessageController = loader.getController();
-            userMessageController.display(userName);
-            user_name = insertUser(userName,firstName,lastName,age,email,password);
+            userMessageController.display(user.getUserName());
+            user.setUser_name(insertUser(user.getUserName(),user.getFirstName(),user.getLastName(),user.getAge(),user.getEmail(),user.getPassword()));
+
 
 
             //stage.initStyle(StageStyle.TRANSPARENT);

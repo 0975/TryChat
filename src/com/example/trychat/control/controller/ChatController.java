@@ -1,12 +1,12 @@
-package sample;
+package com.example.trychat.control.controller;
 
+import com.example.trychat.dao.fxml.DatabaseConnection;
+import com.example.trychat.dao.fxml.HandleMessages;
+import com.example.trychat.dao.fxml.ImageMessages;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
@@ -20,21 +20,16 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.Socket;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class ChatController extends Thread{
     private static final double INITIAL_WIDTH = 200;  // 初始宽度
@@ -69,11 +64,7 @@ public class ChatController extends Thread{
 
     Timestamp currentTimestamp;
     Connection connection = DatabaseConnection.getConnection();
-    private Socket socket;
-    private DataOutputStream out; // 文本消息输出流
-    private DataOutputStream imageOut; // 图像消息输出流
-    private DataInputStream in; // 文本消息输入流
-    private DataInputStream imageIn; // 图像消息输入流
+
     private double lastX, lastY; // 记录上一个鼠标位置
     public Stage getStage() {
         return stage;
@@ -91,7 +82,7 @@ public class ChatController extends Thread{
     @FXML
     private ImageView otherImage;
     private Boolean canvasDraw = false;
-    private WritableImage writableImage;
+    private ImageMessages imageMessages;
     public Boolean getDrawing() {
         return isDrawing;
     }
@@ -100,15 +91,15 @@ public class ChatController extends Thread{
         isDrawing = drawing;
     }
     private boolean isSendingMessage = false; // 新增标志
-
-    SSHExample sshExample = new SSHExample();
+    HandleMessages messages = new HandleMessages();
+    //SSHExample sshExample = new SSHExample();
     @FXML
     public void initialize() {
 // 获取当前窗口并设置 stage
 // 获取当前窗口并赋值给成员变量
 
         // 加载图片
-        Image image = new Image("sample/images/chiikawa.jpg");
+        Image image = new Image("com/example/trychat/images/chiikawa.jpg");
         // 将图片填充到圆形
         circleIcon.setFill(new ImagePattern(image));
 
@@ -168,9 +159,9 @@ public class ChatController extends Thread{
             String message = messageTextField.getText().trim();
             if (!message.isEmpty()) {
                 addChatMessage(message);
-                out.writeInt(0); // 0 for text
-                out.writeUTF(message); // 发送文本消息
-                out.flush(); // 确保数据被发送
+                messages.getOut().writeInt(0); // 0 for text
+                messages.getOut().writeUTF(message); // 发送文本消息
+                messages.getOut().flush(); // 确保数据被发送
                 messageTextField.clear();
             }
 
@@ -187,23 +178,13 @@ public class ChatController extends Thread{
     }
     public void sendMessage(ActionEvent event) throws IOException {
 
-            // 尝试连接到远程主机
-        /*    if (sshExample.connect()) {
-                // 执行命令
-                sshExample.executeCommands();
-                sshExample.startHeartbeat();
-                // 断开连接
-                // sshExample.disconnect();
-            } else {
-                System.err.println("Failed to connect to the SSH server.");
-            }*/
         isSendingMessage = true; // 设置标志为 true，表明正在发送消息
         String message = messageTextField.getText().trim();
         if (!message.isEmpty()) {
             addChatMessage(message);
-            out.writeInt(0); // 0 for text
-            out.writeUTF(message); // 发送文本消息
-            out.flush(); // 确保数据被发送
+            messages.getOut().writeInt(0); // 0 for text
+            messages.getOut().writeUTF(message); // 发送文本消息
+            messages.getOut().flush(); // 确保数据被发送
             messageTextField.clear();
 
             // 更新数据库
@@ -211,7 +192,7 @@ public class ChatController extends Thread{
             String senderId = usernameLabel.getText();
             insertUser(senderId, "gouzi", message, currentTimestamp, (byte) 0);
 
-          isSendingMessage = false; // 新增标志
+            isSendingMessage = false; // 新增标志
         }
 
     }
@@ -221,11 +202,11 @@ public class ChatController extends Thread{
 
         // 添加鼠标事件处理
         myCanvas.addEventHandler(MouseEvent.MOUSE_PRESSED, event -> {
-              System.out.println(isDrawing);
+            System.out.println(isDrawing);
 
-                // 开始新的路径
-                gc.beginPath();
-                gc.moveTo(event.getX(), event.getY());
+            // 开始新的路径
+            gc.beginPath();
+            gc.moveTo(event.getX(), event.getY());
 
 
         });
@@ -247,15 +228,14 @@ public class ChatController extends Thread{
             gc.closePath(); // 结束路径
             this.isDrawing = true;
             myCanvas.setOnMouseExited(even -> {
-               if(!isSendingMessage){
-                   writableImage = saveCanvasToImage(myCanvas);
-                   // 获取 Canvas 的图像数据
-                   BufferedImage bufferedImage = SwingFXUtils.fromFXImage(myCanvas.snapshot(null, null), null);
-
-                   myCanvas.setHeight(INITIAL_HEIGHT);
-                   myCanvas.setWidth(INITIAL_WIDTH);
-                   sendImageToServer(bufferedImage);
-               }
+                if(!isSendingMessage){
+                    //建立图片消息
+                    imageMessages = new ImageMessages(saveCanvasToImage(myCanvas));
+                    myCanvas.setHeight(INITIAL_HEIGHT);
+                    myCanvas.setWidth(INITIAL_WIDTH);
+                    //发送图片消息
+                   messages.sendMessage(imageMessages);
+                }
 
 
             });
@@ -266,10 +246,10 @@ public class ChatController extends Thread{
 
 
     }
-    private void sendImageToServer(BufferedImage bufferedImage){
+    /*private void sendImageToServer(byte[] bufferedImage){
 
         try {
-            byte[] imageBytes = writableImageToByteArray(bufferedImage);
+            byte[] imageBytes = bufferedImage;
             out.writeInt(1); // 1 for image
             out.writeInt(imageBytes.length); // 发送图片大小
             out.write(imageBytes); // 发送图片数据
@@ -278,18 +258,8 @@ public class ChatController extends Thread{
             e.printStackTrace();
         }
 
-    }
-    private byte[] writableImageToByteArray(BufferedImage bufferedImage) {
-        // 使用 ByteArrayOutputStream 存储字节数据
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+    }*/
 
-            ImageIO.write(bufferedImage, "png", baos); // 可以选择其他格式，如 "jpg"
-            return baos.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
     private void saveCanvasAsImage(BufferedImage bufferedImage) {
 
         // 定义保存路径和文件名
@@ -317,108 +287,9 @@ public class ChatController extends Thread{
         myImage.setImage(image);
         System.out.println("图片显示了");
     }
-    //接收消息
-    private class IncomingMessageHandler implements Runnable {
-        public void run() {
-            try {
-                while (true) {
-                    int messageType = in.readInt(); // 先读取消息类型
 
 
-                    if (messageType == 0) { // 文本消息
-                        String message = in.readUTF(); // 读取文本消息
-                        Platform.runLater(() -> addOtherMessage(message)); // 更新 UI
-                    }
-                    if (messageType == 1) { // 图片消息
-                        int imageSize = in.readInt(); // 读取图片大小
-                        byte[] imageBytes = new byte[imageSize];
-                        in.readFully(imageBytes); // 读取完整的图片数据
 
-                        System.out.println("接收图片");
-                        // 将字节数组转换为 BufferedImage
-                        BufferedImage img = ImageIO.read(new ByteArrayInputStream(imageBytes));
-                        Platform.runLater(() -> addOtherChatDrawMessage(SwingFXUtils.toFXImage(img, null))); // 显示图像
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
-    //连接服务器的方法
-    public void connectToServer() {
-
-      try {
-          // 尝试连接到远程主机
-          /*if (sshExample.connect()) {
-              // 执行命令
-              sshExample.executeCommands();
-              sshExample.startHeartbeat();
-              // 断开连接
-             // sshExample.disconnect();
-          } else {
-              System.err.println("Failed to connect to the SSH server.");
-          }*/
-          socket = new Socket("1.94.30.181", 12347); // 连接到服务器
-          // 创建两个流
-          out = new DataOutputStream(socket.getOutputStream());
-          // imageOut = new DataOutputStream(socket.getOutputStream()); // 这里可以使用相同的输出流
-          in= new DataInputStream(socket.getInputStream());
-          //imageIn = new DataInputStream(socket.getInputStream()); // 这里也可以使用相同的输入流
-          // 启动心跳线程
-          new Thread(() -> {
-              try {
-                  while (true) {
-                      out.writeInt(2); // 发送心跳消息类型
-                      out.flush();
-                      Thread.sleep(5000); // 每 5 秒发送一次心跳
-                  }
-              } catch (IOException | InterruptedException e) {
-                  e.printStackTrace();
-              }
-          }).start();
-          // 启动接收消息的线程
-          new Thread(new IncomingMessageHandler()).start();
-
-          // 启动心跳机制
-          //startHeartbeat();
-      }  catch (Exception e) {
-          e.printStackTrace();
-      }
-
-    }
-
-
-    // 启动心跳机制
-    private void startHeartbeat() {
-        ScheduledExecutorService heartbeatScheduler = Executors.newScheduledThreadPool(1);
-        heartbeatScheduler.scheduleAtFixedRate(() -> sendHeartbeat(), 0, 60, TimeUnit.SECONDS); // 每30秒发送一次心跳
-    }
-
-    private void sendHeartbeat() {
-        try {
-            String heartbeatMessage = "HEARTBEAT"; // 根据协议定义心跳消息
-            out.writeInt(2);
-            out.writeUTF(heartbeatMessage); // 发送心跳消息
-            out.flush();
-            System.out.println("心跳消息已发送");
-        } catch (IOException e) {
-            System.err.println("心跳发送失败: " + e.getMessage());
-            // 可以在这里考虑处理连接丢失的情况
-        }
-    }
-    // 关闭连接和停止心跳
-    public void disconnect() {
-        try {
-            if (socket != null && !socket.isClosed()) {
-                socket.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
     //暂停项目
     private static void pauseProgram() {
         try {
@@ -489,7 +360,7 @@ public class ChatController extends Thread{
         usernameLabel.setText(username);
         status.setText(Integer.toString(num)+"online");
     }
-    private void addChatMessage(String message) {
+    public void addChatMessage(String message) {
         // 创建聊天记录 Label
         Label msgLabel = new Label(message);
         msgLabel.setStyle("-fx-background-color: #0000; -fx-padding: 0 20;");
@@ -532,7 +403,7 @@ public class ChatController extends Thread{
             System.out.println("mydraw 是 null，无法设置图像");
         }
     }*/
-    private void addOtherChatDrawMessage(WritableImage mydraw){
+    public void addOtherChatDrawMessage(WritableImage mydraw){
         System.out.println("绘画方法运行了");
         // 创建ImageView
         if (!otherImageMessage.getChildren().isEmpty()) {
@@ -560,7 +431,7 @@ public class ChatController extends Thread{
             System.out.println("mydraw 是 null，无法设置图像");
         }
     }
-    private void addOtherMessage(String message){
+    public void addOtherMessage(String message){
         // 创建聊天记录 Label
         Label msgLabel = new Label(message);
         msgLabel.setStyle("-fx-background-color: #0000; -fx-padding: 5 20;");

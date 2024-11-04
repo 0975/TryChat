@@ -1,5 +1,6 @@
-package sample;
+package com.example.trychat.control.controller;
 
+import com.example.trychat.Main;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;

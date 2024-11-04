@@ -1,4 +1,4 @@
-package sample;
+package com.example.trychat.dao.fxml;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
