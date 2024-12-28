@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<klassmaster>
+    <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>31.0.1-jre</version> <!-- 或者使用 30.1.1-jre -->
+    </dependency>
+    <options>
+        <option name="outputDirectory" value="E:\javaSe\TryChat\output" /> <!-- 指定输出目录 -->
+        <option name="verbose" value="true" /> <!-- 打印详细信息 -->
+    </options>
+
+    <classes>
+        <class name="com.example.trychat.Main">
+            <obfuscate>true</obfuscate> <!-- 混淆 Main 类 -->
+        </class>
+        <class name="com.example.trychat.dao.DatabaseConnection">
+            <obfuscate>true</obfuscate> <!-- 混淆 DatabaseConnection 类 -->
+        </class>
+        <class name="com.example.trychat.socket.ConnectServer">
+            <obfuscate>true</obfuscate> <!-- 混淆 ConnectServer 类 -->
+        </class>
+        <class name="com.example.trychat.model.User">
+            <obfuscate>true</obfuscate> <!-- 混淆 User 类 -->
+        </class>
+        <class name="com.example.trychat.control.ChatController">
+            <obfuscate>true</obfuscate> <!-- 混淆 ChatController 类 -->
+        </class>
+        <class name="com.example.trychat.control.UserMessageController">
+            <obfuscate>true</obfuscate> <!-- 混淆 UserMessageController 类 -->
+        </class>
+    </classes>
+
+    <preserve>
+        <name>com.google.common.util.concurrent.internal.InternalFutureFailureAccess</name>
+    </preserve>
+</klassmaster>
